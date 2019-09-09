@@ -1,0 +1,121 @@
+openapi: 3.0.0
+info:
+  description: OpenAPI for Flink Monitoring REST API
+  version: 1.0.0
+  title: Flink Monitoring REST API
+  license:
+    name: Apache-2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+tags:
+  - name: monitoring
+    description: Flink Monitoring API
+servers:
+  - url: http://localhost:8081/v1
+paths:
+  /jars:
+    get:
+      tags:
+        - monitoring
+      summary: Returns a list of all jars previously uploaded via '/jars/upload'.
+      description: ""
+      operationId: getJars
+      responses:
+        "200":
+          description: JarListInfo
+          content:
+            application/json:
+              schema:
+                description: JarListInfo
+                $ref: "#/components/schemas/JarListInfo"
+  /config:
+    get:
+      tags:
+        - monitoring
+      summary: Returns the configuration of the WebUI.
+      description: ""
+      operationId: getConfig
+      responses:
+        "200":
+          description: DashboardConfiguration
+          content:
+            application/json:
+              schema:
+                description: DashboardConfiguration
+                $ref: "#/components/schemas/DashboardConfiguration"
+  /jars/upload:
+    post:
+      tags:
+        - monitoring
+      summary: Uploads a jar to the cluster.
+      description: ""
+      operationId: uploadJar
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                fileName:
+                  description: file to upload
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+components:
+  schemas:
+    JarListInfo:
+      title: Jar list info
+      type: object
+      properties:
+        address:
+          type: string
+        files:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              uploaded:
+                type: integer
+              entry:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    description:
+                      type: string
+    DashboardConfiguration:
+      type: object
+      properties:
+        refresh-interval:
+          type: integer
+        timezone-name:
+          type: string
+        timezone-offset:
+          type: integer
+        flink-version:
+          type: string
+        flink-revision:
+          type: string
+    ApiResponse:
+      title: An uploaded response
+      description: Describes the result of uploading an image resource
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        type:
+          type: string
+        message:
+          type: string
