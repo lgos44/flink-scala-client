@@ -12,21 +12,16 @@ tags:
 servers:
   - url: http://localhost:8081/v1
 paths:
-  /jars:
-    get:
+  /cluster:
+    delete:
       tags:
         - monitoring
-      summary: Returns a list of all jars previously uploaded via '/jars/upload'.
+      summary: Shuts down the cluster.
       description: ""
-      operationId: getJars
+      operationId: deleteCluster
       responses:
         "200":
-          description: JarListInfo
-          content:
-            application/json:
-              schema:
-                description: JarListInfo
-                $ref: "#/components/schemas/JarListInfo"
+          description: Deleted
   /config:
     get:
       tags:
@@ -40,8 +35,21 @@ paths:
           content:
             application/json:
               schema:
-                description: DashboardConfiguration
                 $ref: "#/components/schemas/DashboardConfiguration"
+  /jars:
+    get:
+      tags:
+        - monitoring
+      summary: Returns a list of all jars previously uploaded via '/jars/upload'.
+      description: ""
+      operationId: getJars
+      responses:
+        "200":
+          description: JarListInfo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JarListInfo"
   /jars/upload:
     post:
       tags:
@@ -61,15 +69,260 @@ paths:
                   format: binary
       responses:
         "200":
-          description: successful operation
+          description: Successful upload
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiResponse"
+        "400":
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /jars/{jarId}:
+    delete:
+      tags:
+        - monitoring
+      parameters:
+        - name: jarId
+          in: path
+          required: true
+          description: Id of the jar to delete
+          schema:
+            type: string
+      summary: Deletes a jar previously uploaded via '/jars/upload'.
+      description: ""
+      operationId: deleteJar
+      responses:
+        "200":
+          description: Delete OK
+  /jars/{jarId}/run:
+    post:
+      tags:
+        - monitoring
+      summary: "Submits a job"
+      description: "Submits a job by running a jar previously uploaded via '/jars/upload'. Program arguments can be passed both via the JSON request (recommended) or query parameters"
+      operationId: runJar
+      parameters:
+        - name: jarId
+          in: path
+          required: true
+          description: Id of the jar
+          schema:
+            type: string
+      requestBody:
+        description: Job parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JarRunRequestBody'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JarRunResponseBody'
+  /jobs:
+    get:
+      tags:
+        - monitoring
+      summary: Returns an overview over all jobs and their current state.
+      description: Returns an overview over all jobs and their current state.
+      operationId: getJobs
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobIdsWithStatusOverview'
+  /jobs/overview:
+    get:
+      tags:
+        - monitoring
+      summary: Returns an overview over all jobs.
+      description: Returns an overview over all jobs.
+      operationId: getJobsOverview
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MultipleJobsDetails'
+  /jobs/{jobId}:
+    get:
+      tags:
+        - monitoring
+      summary: Returns details of a job.
+      description: Returns details of a job.
+      operationId: getJob
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: Id of the job
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobDetailsInfo'
+    patch:
+      tags:
+        - monitoring
+      summary: Returns details of a job.
+      description: Returns details of a job.
+      operationId: terminateJob
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: Id of the job
+          schema:
+            type: string
+        - name: mode
+          in: query
+          required: false
+          description: String value that specifies the termination mode.
+          schema:
+            type: string
+            enum:
+              - cancel
+              - stop
+      responses:
+        "200":
+          description: Terminate OK
+  /jobs/{jobId}/rescaling:
+    patch:
+      tags:
+        - monitoring
+      summary: Triggers the rescaling of a job.
+      description: Triggers the rescaling of a job.
+      operationId: rescaleJob
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: Id of the job
+          schema:
+            type: string
+        - name: parallelism
+          in: query
+          required: true
+          description: |
+            Positive integer value that specifies the desired parallelism.
+          schema:
+            type: integer
+            format: int32
+      responses:
+        "200":
+          description: Trigger OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerResponse'
+  /jobs/{jobId}/rescaling/{triggerId}:
+    get:
+      tags:
+        - monitoring
+      summary: Triggers the rescaling of a job.
+      description: Triggers the rescaling of a job.
+      operationId: getRescaleStatus
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: |
+            32-character hexadecimal string value that identifies a job.
+          schema:
+            type: string
+        - name: triggerId
+          in: path
+          required: true
+          description: |
+            32-character hexadecimal string that identifies an asynchronous
+            operation trigger ID. The ID was returned then the operation
+            was triggered.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Trigger status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsynchronousOperationResult'
+  /jobs/{jobId}/savepoints:
+    post:
+      tags:
+        - monitoring
+      summary: Triggers the rescaling of a job.
+      description: Triggers the rescaling of a job.
+      operationId: triggerSavepoint
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: |
+            32-character hexadecimal string value that identifies a job.
+          schema:
+            type: string
+      requestBody:
+        description: SavepointTriggerRequestBody
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SavepointTriggerRequestBody'
+      responses:
+        "202":
+          description: Trigger OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerResponse'
+  /jobs/{jobId}/savepoints/{triggerId}:
+    get:
+      tags:
+        - monitoring
+      summary: Triggers the rescaling of a job.
+      description: Triggers the rescaling of a job.
+      operationId: getSavepointStatus
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: |
+            32-character hexadecimal string value that identifies a job.
+          schema:
+            type: string
+        - name: triggerId
+          in: path
+          required: true
+          description: |
+            32-character hexadecimal string that identifies an asynchronous
+            operation trigger ID. The ID was returned then the operation
+            was triggered.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Trigger status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsynchronousOperationResult'
 components:
   schemas:
     JarListInfo:
-      title: Jar list info
+      title: JarListInfo
       type: object
       properties:
         address:
@@ -77,23 +330,29 @@ components:
         files:
           type: array
           items:
-            type: object
-            properties:
-              id:
-                type: string
-              name:
-                type: string
-              uploaded:
-                type: integer
-              entry:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    name:
-                      type: string
-                    description:
-                      type: string
+            $ref: "#/components/schemas/JarFileInfo"
+    JarFileInfo:
+      title: JarFileInfo
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        uploaded:
+          type: integer
+        entry:
+          type: array
+          items:
+            $ref: "#/components/schemas/JarEntryInfo"
+    JarEntryInfo:
+      title: JarEntryInfo
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
     DashboardConfiguration:
       type: object
       properties:
@@ -119,3 +378,194 @@ components:
           type: string
         message:
           type: string
+    JarRunRequestBody:
+      type: object
+      properties:
+        entryClass:
+          type: string
+        programArgs:
+          type: string
+        programArgsList:
+          type: array
+          items:
+            type: string
+        parallelism:
+          type: integer
+        jobId:
+          type: string
+        allowNonRestoredState:
+          type: boolean
+        savepointPath:
+          type: string
+    JarRunResponseBody:
+      type: object
+      properties:
+        jobid:
+          type: string
+          format: string
+    JobIdsWithStatusOverview:
+      type: object
+      properties:
+        jobs:
+          type: array
+          items:
+            $ref: "#/components/schemas/JobIdWithStatus"
+    JobIdWithStatus:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum:
+            - CREATED
+            - RUNNING
+            - FAILING
+            - FAILED
+            - CANCELLING
+            - CANCELED
+            - FINISHED
+            - RESTARTING
+            - SUSPENDING
+            - SUSPENDED
+            - RECONCILIN
+    MultipleJobsDetails:
+      type: object
+      properties:
+        jobs:
+          type: array
+          items:
+            type: string
+    JobDetailsInfo:
+      type: object
+      properties:
+        jid:
+          type: string
+        name:
+          type: string
+        isStoppable:
+          type: boolean
+        state:
+          type: string
+          enum:
+            - CREATED
+            - RUNNING
+            - FAILING
+            - FAILED
+            - CANCELLING
+            - CANCELED
+            - FINISHED
+            - RESTARTING
+            - SUSPENDING
+            - SUSPENDED
+            - RECONCILING
+        start-time:
+          type: integer
+        end-time:
+          type: integer
+        duration:
+          type: integer
+        now:
+          type: integer
+        timestamps:
+          type: object
+          additionalProperties:
+            type: integer
+        vertices:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobVertexDetailsInfo'
+        status-counts:
+          type: object
+          additionalProperties:
+            type: integer
+        plan:
+          type: string
+
+    JobVertexDetailsInfo:
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        parallelism:
+          type: integer
+        status:
+          type: string
+          enum:
+            - CREATED
+            - SCHEDULED
+            - DEPLOYING
+            - RUNNING
+            - FINISHED
+            - CANCELING
+            - CANCELED
+            - FAILED
+            - RECONCILING
+        start-time:
+          type: integer
+        end-time:
+          type: integer
+        duration:
+          type: integer
+        tasks:
+          type: object
+          additionalProperties:
+            type: integer
+        metrics:
+          $ref: '#/components/schemas/IOMetricsInfo'
+    IOMetricsInfo:
+      type: object
+      properties:
+        read-bytes:
+          type: integer
+        read-bytes-complete:
+          type: boolean
+        write-bytes:
+          type: integer
+        write-bytes-complete:
+          type: boolean
+        read-records:
+          type: integer
+        read-records-complete:
+          type: boolean
+        write-records:
+          type: integer
+        write-records-complete:
+          type: boolean
+    TriggerResponse:
+      type: object
+      properties:
+        request-id:
+          type: string
+    AsynchronousOperationResult:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/QueueStatus'
+        operation:
+          type: string
+    QueueStatus:
+      type: object
+      properties:
+        id:
+          type: string
+          enum:
+            - IN_PROGRESS
+            - COMPLETED
+      required:
+        - id
+    SavepointTriggerRequestBody:
+      type: object
+      properties:
+        target-directory:
+          type: string
+        cancel-job:
+          type: boolean
+    ErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: string
