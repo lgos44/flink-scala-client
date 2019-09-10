@@ -102,7 +102,9 @@ paths:
       tags:
         - monitoring
       summary: "Submits a job"
-      description: "Submits a job by running a jar previously uploaded via '/jars/upload'. Program arguments can be passed both via the JSON request (recommended) or query parameters"
+      description: |
+        "Submits a job by running a jar previously uploaded via '/jars/upload'.
+         Program arguments can be passed both via the JSON request (recommended) or query parameters"
       operationId: runJar
       parameters:
         - name: jarId
@@ -331,6 +333,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/JarFileInfo"
+      required: [address, files]
+
     JarFileInfo:
       title: JarFileInfo
       type: object
@@ -345,6 +349,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/JarEntryInfo"
+      required: [id, name, uploaded, entry]
+
     JarEntryInfo:
       title: JarEntryInfo
       type: object
@@ -353,6 +359,8 @@ components:
           type: string
         description:
           type: string
+      required: [name]
+
     DashboardConfiguration:
       type: object
       properties:
@@ -366,6 +374,8 @@ components:
           type: string
         flink-revision:
           type: string
+      required: [refresh-interval, timezone-offset, flink-version, flink-revision]
+
     ApiResponse:
       title: An uploaded response
       description: Describes the result of uploading an image resource
@@ -378,6 +388,7 @@ components:
           type: string
         message:
           type: string
+
     JarRunRequestBody:
       type: object
       properties:
@@ -397,12 +408,15 @@ components:
           type: boolean
         savepointPath:
           type: string
+
     JarRunResponseBody:
       type: object
       properties:
         jobid:
           type: string
           format: string
+      required: [jobid]
+
     JobIdsWithStatusOverview:
       type: object
       properties:
@@ -410,6 +424,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/JobIdWithStatus"
+      required: [jobs]
+
     JobIdWithStatus:
       type: object
       properties:
@@ -428,14 +444,78 @@ components:
             - RESTARTING
             - SUSPENDING
             - SUSPENDED
-            - RECONCILIN
+            - RECONCILING
+      required: [id, status]
+
     MultipleJobsDetails:
       type: object
       properties:
         jobs:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/JobSummary'
+      required: [jobs]
+
+    JobSummary:
+      type: object
+      properties:
+        jid:
+          type: string
+        name:
+          type: string
+        state:
+          type: string
+          enum:
+            - CREATED
+            - RUNNING
+            - FAILING
+            - FAILED
+            - CANCELLING
+            - CANCELED
+            - FINISHED
+            - RESTARTING
+            - SUSPENDING
+            - SUSPENDED
+            - RECONCILING
+        start-time:
+          type: integer
+        end-time:
+          type: integer
+        duration:
+          type: integer
+        last-modification:
+          type: integer
+        tasks:
+          $ref: '#/components/schemas/TaskCounts'
+      required: [jid, name, state, start-time, end-time, duration,
+                 last-modification, tasks]
+
+    TaskCounts:
+      type: object
+      properties:
+        total:
+          type: integer
+        created:
+          type: integer
+        scheduled:
+          type: integer
+        deploying:
+          type: integer
+        running:
+          type: integer
+        finished:
+          type: integer
+        canceling:
+          type: integer
+        canceled:
+          type: integer
+        failed:
+          type: integer
+        reconciling:
+          type: integer
+      required: [total, created, scheduled, deploying, running, finished,
+                 canceling, canceled, failed, reconciling]
+
     JobDetailsInfo:
       type: object
       properties:
@@ -468,9 +548,7 @@ components:
         now:
           type: integer
         timestamps:
-          type: object
-          additionalProperties:
-            type: integer
+          $ref:  '#/components/schemas/StateTimes'
         vertices:
           type: array
           items:
@@ -481,6 +559,105 @@ components:
             type: integer
         plan:
           type: string
+      required: [jid, name, isStoppable, state, start-time, end-time, duration,
+                 now, timestamps, vertices, status-counts, plan]
+
+    JobPlan:
+      type: object
+      properties:
+        jid:
+          type: string
+        name:
+          type: string
+        nodes:
+          $ref: '#/components/schemas/JobPlanNode'
+      required: [jid, name, nodes]
+
+    JobPlanNode:
+      type: object
+      properties:
+        id:
+          type: string
+        parallelism:
+          type: integer
+        operator:
+          type: string
+        operator_strategy:
+          type: string
+        description:
+          type: string
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeInput'
+        optimizer_properties:
+          $ref: '#/components/schemas/OptimizerProperties'
+      required: [id, parallelism, operator, operator_strategy, description, optimizer_properties]
+
+    NodeInput:
+      type: object
+      properties:
+        num:
+          type: integer
+        id:
+          type: string
+        ship_strategy:
+          type: string
+        local_strategy:
+          type: string
+        caching:
+          type: string
+        exchange:
+          type: string
+      required: [num, id, exchange]
+
+    OptimizerProperties:
+      type: object
+      properties:
+        global_properties:
+          type: object
+          additionalProperties:
+            type: string
+        local_properties:
+          type: object
+          additionalProperties:
+            type: string
+        estimates:
+          type: object
+          additionalProperties:
+            type: string
+        costs:
+          type: object
+          additionalProperties:
+            type: string
+        compiler_hints:
+          type: object
+          additionalProperties:
+            type: string
+
+    StateTimes:
+      type: object
+      properties:
+        CREATED:
+          type: integer
+        RUNNING:
+          type: integer
+        FAILING:
+          type: integer
+        FAILED:
+          type: integer
+        CANCELLING:
+          type: integer
+        CANCELED:
+          type: integer
+        FINISHED:
+          type: integer
+        RESTARTING:
+          type: integer
+        SUSPENDED:
+          type: integer
+        RECONCILING:
+          type: integer
 
     JobVertexDetailsInfo:
       properties:
@@ -514,6 +691,8 @@ components:
             type: integer
         metrics:
           $ref: '#/components/schemas/IOMetricsInfo'
+      required: [id, name, parallelism, status, tasks, metrics]
+
     IOMetricsInfo:
       type: object
       properties:
@@ -533,11 +712,14 @@ components:
           type: integer
         write-records-complete:
           type: boolean
+
     TriggerResponse:
       type: object
       properties:
         request-id:
           type: string
+      required: [request-id]
+
     AsynchronousOperationResult:
       type: object
       properties:
@@ -545,6 +727,8 @@ components:
           $ref: '#/components/schemas/QueueStatus'
         operation:
           type: string
+      required: [status]
+
     QueueStatus:
       type: object
       properties:
@@ -555,6 +739,7 @@ components:
             - COMPLETED
       required:
         - id
+
     SavepointTriggerRequestBody:
       type: object
       properties:
@@ -562,6 +747,8 @@ components:
           type: string
         cancel-job:
           type: boolean
+      required: [cancel-job]
+
     ErrorResponse:
       type: object
       properties:
@@ -569,3 +756,4 @@ components:
           type: array
           items:
             type: string
+      required: [errors]

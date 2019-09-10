@@ -15,12 +15,17 @@ import org.openapitools.client.core.ApiModel
 import org.joda.time.DateTime
 import java.util.UUID
 
-case class DashboardConfiguration (
-  refreshInterval: Int,
-  timezoneName: Option[String] = None,
-  timezoneOffset: Int,
-  flinkVersion: String,
-  flinkRevision: String
+case class StateTimes (
+  cREATED: Option[Int] = None,
+  rUNNING: Option[Int] = None,
+  fAILING: Option[Int] = None,
+  fAILED: Option[Int] = None,
+  cANCELLING: Option[Int] = None,
+  cANCELED: Option[Int] = None,
+  fINISHED: Option[Int] = None,
+  rESTARTING: Option[Int] = None,
+  sUSPENDED: Option[Int] = None,
+  rECONCILING: Option[Int] = None
 ) extends ApiModel
 
 

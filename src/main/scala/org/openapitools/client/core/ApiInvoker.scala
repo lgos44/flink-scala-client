@@ -143,7 +143,7 @@ class ApiInvoker(formats: Formats)(implicit system: ActorSystem) extends CustomC
       case f: File =>
         BodyPart.fromFile(
           name,
-          ContentType(MediaTypes.forExtension(getFileExtension(f)), () => HttpCharsets.`UTF-8`),
+          ContentType(MediaTypes.`application/octet-stream`),
           f,
           f.length().toInt
         )
@@ -156,9 +156,6 @@ class ApiInvoker(formats: Formats)(implicit system: ActorSystem) extends CustomC
     }
   }
 
-  private def getFileExtension(file: File): String = {
-    file.getName.split("\\.").last
-  }
 
   private def formDataContent(request: ApiRequest[_]) = {
     val params = request.formParams.asFormattedParams
@@ -166,7 +163,7 @@ class ApiInvoker(formats: Formats)(implicit system: ActorSystem) extends CustomC
       None
     else
       Some(
-        parseContentType(request.contentType).mediaType match {
+        normalizedContentType(request.contentType).mediaType match {
           case MediaTypes.`multipart/form-data` =>
             Multipart.FormData(Source(params.toList.map { case (name, value) => bodyPart(name, value) }))
           case MediaTypes.`application/x-www-form-urlencoded` =>
@@ -233,7 +230,6 @@ class ApiInvoker(formats: Formats)(implicit system: ActorSystem) extends CustomC
 
     val request = createRequest(makeUri(r), r)
 
-    println(request)
     http
       .singleRequest(request)
       .map { response =>

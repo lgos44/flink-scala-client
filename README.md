@@ -65,19 +65,50 @@ All URIs are relative to *http://localhost:8081/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*MonitoringApi* | **deleteCluster** | **DELETE** /cluster | Shuts down the cluster.
+*MonitoringApi* | **deleteJar** | **DELETE** /jars/{jarId} | Deletes a jar previously uploaded via &#39;/jars/upload&#39;.
 *MonitoringApi* | **getConfig** | **GET** /config | Returns the configuration of the WebUI.
 *MonitoringApi* | **getJars** | **GET** /jars | Returns a list of all jars previously uploaded via &#39;/jars/upload&#39;.
+*MonitoringApi* | **getJob** | **GET** /jobs/{jobId} | Returns details of a job.
+*MonitoringApi* | **getJobs** | **GET** /jobs | Returns an overview over all jobs and their current state.
+*MonitoringApi* | **getJobsOverview** | **GET** /jobs/overview | Returns an overview over all jobs.
+*MonitoringApi* | **getRescaleStatus** | **GET** /jobs/{jobId}/rescaling/{triggerId} | Triggers the rescaling of a job.
+*MonitoringApi* | **getSavepointStatus** | **GET** /jobs/{jobId}/savepoints/{triggerId} | Triggers the rescaling of a job.
+*MonitoringApi* | **rescaleJob** | **PATCH** /jobs/{jobId}/rescaling | Triggers the rescaling of a job.
+*MonitoringApi* | **runJar** | **POST** /jars/{jarId}/run | Submits a job
+*MonitoringApi* | **terminateJob** | **PATCH** /jobs/{jobId} | Returns details of a job.
+*MonitoringApi* | **triggerSavepoint** | **POST** /jobs/{jobId}/savepoints | Triggers the rescaling of a job.
 *MonitoringApi* | **uploadJar** | **POST** /jars/upload | Uploads a jar to the cluster.
 
 
 ## Documentation for Models
 
  - [ApiResponse](ApiResponse.md)
+ - [AsynchronousOperationResult](AsynchronousOperationResult.md)
  - [DashboardConfiguration](DashboardConfiguration.md)
+ - [ErrorResponse](ErrorResponse.md)
+ - [IOMetricsInfo](IOMetricsInfo.md)
  - [InlineObject](InlineObject.md)
+ - [JarEntryInfo](JarEntryInfo.md)
+ - [JarFileInfo](JarFileInfo.md)
  - [JarListInfo](JarListInfo.md)
- - [JarListInfoEntry](JarListInfoEntry.md)
- - [JarListInfoFiles](JarListInfoFiles.md)
+ - [JarRunRequestBody](JarRunRequestBody.md)
+ - [JarRunResponseBody](JarRunResponseBody.md)
+ - [JobDetailsInfo](JobDetailsInfo.md)
+ - [JobIdWithStatus](JobIdWithStatus.md)
+ - [JobIdsWithStatusOverview](JobIdsWithStatusOverview.md)
+ - [JobPlan](JobPlan.md)
+ - [JobPlanNode](JobPlanNode.md)
+ - [JobSummary](JobSummary.md)
+ - [JobVertexDetailsInfo](JobVertexDetailsInfo.md)
+ - [MultipleJobsDetails](MultipleJobsDetails.md)
+ - [NodeInput](NodeInput.md)
+ - [OptimizerProperties](OptimizerProperties.md)
+ - [QueueStatus](QueueStatus.md)
+ - [SavepointTriggerRequestBody](SavepointTriggerRequestBody.md)
+ - [StateTimes](StateTimes.md)
+ - [TaskCounts](TaskCounts.md)
+ - [TriggerResponse](TriggerResponse.md)
 
 
 ## Documentation for Authorization

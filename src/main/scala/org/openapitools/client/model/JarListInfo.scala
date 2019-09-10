@@ -16,8 +16,8 @@ import org.joda.time.DateTime
 import java.util.UUID
 
 case class JarListInfo (
-  address: Option[String] = None,
-  files: Option[Seq[JarListInfoFiles]] = None
+  address: String,
+  files: Seq[JarFileInfo]
 ) extends ApiModel
 
 

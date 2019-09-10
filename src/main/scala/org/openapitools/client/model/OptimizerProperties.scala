@@ -15,12 +15,12 @@ import org.openapitools.client.core.ApiModel
 import org.joda.time.DateTime
 import java.util.UUID
 
-case class DashboardConfiguration (
-  refreshInterval: Int,
-  timezoneName: Option[String] = None,
-  timezoneOffset: Int,
-  flinkVersion: String,
-  flinkRevision: String
+case class OptimizerProperties (
+  globalProperties: Option[Map[String, String]] = None,
+  localProperties: Option[Map[String, String]] = None,
+  estimates: Option[Map[String, String]] = None,
+  costs: Option[Map[String, String]] = None,
+  compilerHints: Option[Map[String, String]] = None
 ) extends ApiModel
 
 

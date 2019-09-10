@@ -15,12 +15,14 @@ import org.openapitools.client.core.ApiModel
 import org.joda.time.DateTime
 import java.util.UUID
 
-case class DashboardConfiguration (
-  refreshInterval: Int,
-  timezoneName: Option[String] = None,
-  timezoneOffset: Int,
-  flinkVersion: String,
-  flinkRevision: String
+case class JobPlanNode (
+  id: String,
+  parallelism: Int,
+  operator: String,
+  operatorStrategy: String,
+  description: String,
+  inputs: Option[Seq[NodeInput]] = None,
+  optimizerProperties: OptimizerProperties
 ) extends ApiModel
 
 

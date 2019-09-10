@@ -15,12 +15,17 @@ import org.openapitools.client.core.ApiModel
 import org.joda.time.DateTime
 import java.util.UUID
 
-case class DashboardConfiguration (
-  refreshInterval: Int,
-  timezoneName: Option[String] = None,
-  timezoneOffset: Int,
-  flinkVersion: String,
-  flinkRevision: String
+case class QueueStatus (
+  id: QueueStatusEnums.Id
 ) extends ApiModel
 
+object QueueStatusEnums {
+
+  type Id = Id.Value
+  object Id extends Enumeration {
+    val INPROGRESS = Value("IN_PROGRESS")
+    val COMPLETED = Value("COMPLETED")
+  }
+
+}
 

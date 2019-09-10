@@ -15,5 +15,11 @@ object Main extends App {
   MonitoringApi().uploadJar(Some(new File("/home/lgos/projects/zephyros-cep/sql-job-builder/target/scala-2.11/sqlJobBuilder-assembly-0.0.1.jar"))).response(invoker).andThen{
     case x => println(x)
   }
+//  MonitoringApi().getJob("0f0a38d958687424f74f1579f631dd21").response(invoker).andThen{
+//    case x => println(x)
+//  }
 
+//  MonitoringApi().getJars().response(invoker).andThen{
+//    case x => println(x)
+//  }
 }
